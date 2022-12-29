@@ -6,4 +6,4 @@ Router.get("/getAllBlogs", getAllBlogs)
 Router.get("/searchByQuery", searchQuery)
 Router.get("/singleBlog/:id", getSingleBlog)
 
-module.exports = Router
+module.exports = Router 

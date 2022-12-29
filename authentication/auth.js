@@ -59,10 +59,6 @@ passport.use(
                 }
                 
                 const validate = await user.ValidatePassword(password)
-                // const hash = await bcrypt.hash(password,10)
-                // console.log(hash)
-                // console.log(user.password)
-
                 if(!validate){
                     return done(null,false,"Passoword is not correct")
                 }

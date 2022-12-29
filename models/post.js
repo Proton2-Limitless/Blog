@@ -4,6 +4,10 @@ const Schema = mongoose.Schema;
 
 const PostSchema = new Schema(
   {
+    authorName: {
+      type: String,
+      required: true
+    },
     title: {
       type: String,
       required: true,

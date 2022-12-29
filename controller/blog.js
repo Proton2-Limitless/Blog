@@ -3,7 +3,7 @@ const blogModel = require("../models/post")
 const getAllBlogs = async (req, res, next) => {
     try {
         const page = req.query.page || 1
-        const limit = 20
+        const limit = 5
         const blogs = await blogModel.find({ state: "published" }).populate("author", "firstname lastname")
             .limit(limit).skip((page - 1) * limit)
         if (!blogs) {
@@ -21,14 +21,13 @@ const getAllBlogs = async (req, res, next) => {
     }
 }
 const searchQuery = async (req, res, next) => {
-    try {
+    try { 
         const { page = 1, author, tags, title, order_by, order } = req.query
         const limit = 5
         // const searchName
         const searchQuery = {}
-        const authorSearchQ = {}
         if (author) {
-            authorSearchQ.firstname = author
+            searchQuery.authorName = author
         }
         if (tags) {
             searchQuery.tags = tags
@@ -38,22 +37,23 @@ const searchQuery = async (req, res, next) => {
         }
         searchQuery.state = "published"
         const sortQuery = {}
-        const sortAttributes = order_by.split(",")
-        for (const attributes of sortAttributes) {
-            if (order === "asc" && order_by) {
-                sortQuery[attributes] = 1
-            }
-            if (order === "desc" && order_by) {
-                sortQuery[attributes] = -1
+        let sortAttributes
+        if(order_by){
+            sortAttributes = order_by.split(",")
+            for (const attributes of sortAttributes) {
+                if (order === "asc" && order_by) {
+                    sortQuery[attributes] = 1
+                }
+                if (order === "desc" && order_by) {
+                    sortQuery[attributes] = -1
+                }
             }
         }
-        let searchedPost = blogModel.find(searchQuery)
-            .populate({ path: "author", match: authorSearchQ, select: "firstname lastname" })
+        const searchedPost =await blogModel.find(searchQuery)
+            .populate({ path: "author", select: "firstname lastname" })
             .sort(sortQuery)
             .skip((page - 1) * limit)
-            .limit(limit)
-
-            searchedPost = (await searchedPost).filter(post => post.author)   
+            .limit(limit)   
         return res.status(200).json({
             status: true,
             searchedPost

@@ -18,7 +18,7 @@ const Login = async (req, res, next) => {
                 async (error) => {
                     if (error) return next(error);
 
-                    const body = { _id: user._id, email: user.email };
+                    const body = { _id: user._id, email: user.email, firstname: user.firstname, lastname: user.lastname };
                     const token = jwt.sign({ user: body }, process.env.SECRET_KEY, { expiresIn: "1hr" });
 
                     return res.json({ token });
@@ -34,7 +34,7 @@ const Login = async (req, res, next) => {
 const SignUp = async (req, res, next) => {
     res.status(201).json({
         message: 'Signup successful',
-        user: req.user
+        userAuth: !!req.user
     });
 }
 

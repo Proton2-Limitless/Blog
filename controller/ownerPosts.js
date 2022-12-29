@@ -9,6 +9,7 @@ const createPost = async (req, res, next) => {
 
     const reading_time = await CalculateReadingTime(body);
 
+    const authorName = `${req.user.firstname} ${req.user.lastname}`
     let post = await PostModel.create({
       title,
       description,
@@ -16,10 +17,8 @@ const createPost = async (req, res, next) => {
       body,
       author,
       reading_time,
+      authorName
     });
-
-    post = await post.populate("author","firstname lastname")
-    await post.save()
     const user = await userModel.findById(author);
     user.posts.push(post._id);
     await user.save();
@@ -39,7 +38,7 @@ const getAllPosts = async (req, res, next) => {
   try {
     const { state, page = 1 } = req.query;
 
-    const limit = 20
+    const limit = 5
     const id = req.user._id
     const PostByState = await PostModel.find({ author: id, state }).populate("author", "firstname lastname")
       .limit(limit * 1) 
@@ -64,6 +63,9 @@ const updateState = async (req, res, next) => {
     const postid = req.params.id
     const state = req.query.state
     const post = await PostModel.findById({ _id: postid })
+    if (!post) {
+      return res.status(404).send("Not Found")
+    }
     if (post.author.toString() !== req.user._id.toString()) {
       return res.status(403).send("Not Authorised")
     }
@@ -86,12 +88,14 @@ const updatePost = async (req, res, next) => {
   try {
     const postid = req.params.id
     const post = await PostModel.findById({ _id: postid })
+    if (!post) {
+      return res.status(404).send("Not Found")
+    }
     if (post.author.toString() !== req.user._id.toString()) {
       return res.status(403).send("Not Authorised")
     }
-    let reading_time
     if (req.body.body) {
-      reading_time = await CalculateReadingTime(req.body.body)
+      const reading_time = await CalculateReadingTime(req.body.body)
       await post.updateOne({ ...req.body, reading_time })
       return res.status(201).json({
         message: "edited succesfully",
